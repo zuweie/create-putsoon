@@ -1,0 +1,17 @@
+{
+  "name": "create-putsoon",
+  "version": "1.0.2",
+  "description": "pustsoon init",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "putsoon"
+  ],
+  "bin": "./bin/create-putsoon.js",
+  "author": "zuweie",
+  "license": "MIT",
+  "dependencies": {
+    "shelljs": "^0.8.3"
+  }
+}
