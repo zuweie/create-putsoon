@@ -1,6 +1,6 @@
 {
   "name": "create-putsoon",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "pustsoon init",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -12,6 +12,9 @@
   "author": "zuweie",
   "license": "MIT",
   "dependencies": {
+    "adm-zip": "^0.4.14",
+    "cli-progress": "^3.7.0",
+    "colors": "^1.4.0",
     "shelljs": "^0.8.3"
   }
 }
