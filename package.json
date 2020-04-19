@@ -15,6 +15,9 @@
     "adm-zip": "^0.4.14",
     "cli-progress": "^3.7.0",
     "colors": "^1.4.0",
-    "shelljs": "^0.8.3"
+    "inquirer": "^7.1.0",
+    "node-downloader-helper": "^1.0.12",
+    "shelljs": "^0.8.3",
+    "yargs": "^15.3.1"
   }
 }
