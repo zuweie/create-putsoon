@@ -101,9 +101,9 @@ let downloader2 = function (url, dist_dir, filename, default_length) {
     let arch     = os.arch();
 
     let dl = argv.dl? argv.dl : 'all';
-    
+    let mode = argv.mode? argv.mode : 'setup';
+
     //console.debug('dl', dl);
-    
 
     if (arch != 'x64') {
         console.error(colors.red(`SORRY! putsoon dose not support <${arch}> yet.`));
@@ -119,14 +119,17 @@ let downloader2 = function (url, dist_dir, filename, default_length) {
         let cwd = process.cwd();
         let zip = null;
         let zip_file = '';
-
         /**
          * step 1 download the putsoon.zip
          */
         
         if (dl == 'putsoon' || dl == 'all') {
             console.log(colors.green('- start download putsoon.zip'));
-            zip_file = await downloader2('https://github.com/zuweie/putsoon/archive/master.zip', cwd, 'putsoon.zip', 1024000)
+            if (mode == 'setup') {
+                zip_file = await downloader2('https://github.com/zuweie/putsoon/archive/master.zip', cwd, 'putsoon.zip', 1024000)
+            }else{
+                zip_file = await downloader2('https://github.com/zuweie/putsoon-node_modules/raw/master/test-putsoon.zip', cwd, 'putsoon.zip', 1024);
+            }
             console.log(colors.green('unpacking source file ...'));
             zip = new AdmZip(zip_file);
             zip.extractAllTo(cwd);
@@ -148,7 +151,11 @@ let downloader2 = function (url, dist_dir, filename, default_length) {
             if (platform == 'darwin') {
                 console.log(colors.green(`- start downloading <${platform}> modules ...`));
                 //zip_file = await downloader("https://raw.githubusercontent.com/zuweie/putsoon-node_modules/master/putsoon-node_modules-darwin-1.0.0.zip", "modules.zip", output, 72*1024*1024);
-                zip_file = await downloader2('https://github.com/zuweie/putsoon-node_modules/raw/master/putsoon-node_modules-darwin-1.0.0.zip', cwd, 'node_modules.zip');
+                if (mode == 'setup') {
+                    zip_file = await downloader2('https://github.com/zuweie/putsoon-node_modules/raw/master/putsoon-node_modules-darwin-1.0.0.zip', cwd, 'node_modules.zip', 72*1024*1024);
+                }else {
+                    zip_file = await downloader2('https://github.com/zuweie/putsoon-node_modules/raw/master/test_modules.zip', cwd, 'node_modules.zip', 5*1024);
+                }
                 //zip_file = await downloader2('https://github.com/zuweie/putsoon-node_modules/raw/master/ylru.zip', module_dir, 'node_modules.zip', 5 * 1024);
             }
             console.log(colors.green('unpacking the node modules.'));
@@ -158,6 +165,7 @@ let downloader2 = function (url, dist_dir, filename, default_length) {
             console.log(colors.green('node_modules download completed.'));
         }
 
+        if (mode == 'test') return;
         
         console.log(colors.green('- choose your env:'));
 
