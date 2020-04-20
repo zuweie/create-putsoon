@@ -165,7 +165,7 @@ let downloader2 = function (url, dist_dir, filename, default_length) {
             console.log(colors.green('node_modules download completed.'));
         }
 
-        if (mode == 'test') return;
+       
         
         console.log(colors.green('- choose your env:'));
 
@@ -190,11 +190,20 @@ let downloader2 = function (url, dist_dir, filename, default_length) {
                 ]
             },
         ];
+
         let {env, login, password} = await inquirer.prompt(question);
         login = login?login:'admin';
         password = password?password:'123456';
-        //console.debug('answer', answer);
-        //return;
+
+        if (mode == 'test') {
+            console.debug(colors.red('test mode will install notthing'));
+            console.debug(`npm run setup -- --login=${login} --password=${password}`);
+            console.debug(`npm run seeding:${env}`);
+            shell.exec('ls -all '+cwd+'/');
+            shell.rm('-rf', cwd+'/*');
+            return;
+        }
+
 
         console.log(colors.green('- setup putsoon ...'));
         shell.exec(`npm run setup -- --login=${login} --password=${password}`);
