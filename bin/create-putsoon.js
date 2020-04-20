@@ -151,7 +151,7 @@ let downloader2 = function (url, dist_dir, filename, default_length) {
                 zip_file = await downloader2('https://github.com/zuweie/putsoon-node_modules/raw/master/putsoon-node_modules-darwin-1.0.0.zip', cwd, 'node_modules.zip');
                 //zip_file = await downloader2('https://github.com/zuweie/putsoon-node_modules/raw/master/ylru.zip', module_dir, 'node_modules.zip', 5 * 1024);
             }
-
+            console.log(colors.green('unpacking the node modules.'));
             zip = new AdmZip(zip_file);
             zip.extractAllTo(module_dir);
             shell.rm('-fr', zip_file);
@@ -194,7 +194,7 @@ let downloader2 = function (url, dist_dir, filename, default_length) {
         shell.exec(`npm run seeding:${env}`);
         console.log(colors.green('putsoon install successful.'));
         console.log(colors.yellow('command: "npm run start -- --port=xxxx(default 7001)" start putsoon with port xxxx in production env')); 
-        console.log(colors.yellog('command: "npm run dev -- --port=xxxx(default 7001)" start putsoon with port xxxx in development env.'));
+        console.log(colors.yellow('command: "npm run dev -- --port=xxxx(default 7001)" start putsoon with port xxxx in development env.'));
         console.log(colors.yellow('command: "npm run stop" stop the putoon'));
         console.log(colors.yellow('lanunch putsoon http://127.0.0.1:7001/admin on Browser'));
         return;
