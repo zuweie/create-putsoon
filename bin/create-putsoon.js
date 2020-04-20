@@ -102,7 +102,7 @@ let downloader2 = function (url, dist_dir, filename, default_length) {
 
     let dl = argv.dl? argv.dl : 'all';
     
-    console.debug('dl', dl);
+    //console.debug('dl', dl);
     
 
     if (arch != 'x64') {
