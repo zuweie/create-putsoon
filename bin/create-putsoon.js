@@ -6,7 +6,6 @@ const cliProgress = require('cli-progress');
 const https = require('https');
 const fs = require('fs');
 const colors = require('colors/safe');
-const AdmZip = require('adm-zip');
 const os = require('os');
 const {DownloaderHelper} = require('node-downloader-helper');
 const argv = require('yargs').argv
@@ -114,71 +113,19 @@ let downloader2 = function (url, dist_dir, filename, default_length) {
         console.error(colors.red(`SORRY! putsoon dose not support platform <${platform}>.`));
         return;
     }
-    
+
     try {
-        let cwd = process.cwd();
-        let zip = null;
-        let zip_file = '';
-        /**
-         * step 1 download the putsoon.zip
-         */
-        
-        if (dl == 'putsoon' || dl == 'all') {
-            console.log(colors.green('- start download putsoon.zip'));
-            if (mode == 'setup') {
-                zip_file = await downloader2('https://github.com/zuweie/putsoon/archive/master.zip', cwd, 'putsoon.zip', 1024000)
-            }else{
-                zip_file = await downloader2('https://github.com/zuweie/putsoon-node_modules/raw/master/test-putsoon.zip', cwd, 'putsoon.zip', 1024);
-            }
-            console.log(colors.green('unpacking source file ...'));
-            zip = new AdmZip(zip_file);
-            zip.extractAllTo(cwd);
-            shell.mv(cwd + '/putsoon-master/*', cwd);
-            shell.rm('-fr', cwd + '/putsoon.zip');
-            shell.rm('-fr', cwd + '/putsoon-master');
-            console.log(colors.green('putsoon download completed'));
-        }
-
-        
-        
-        /**
-         * step 2 download node_modules.zip
-         */
-        if (dl == 'modules' || dl == 'all') {
-            let module_dir = cwd + '/node_modules/';
-            shell.mkdir(cwd + '/node_modules');
-
-            if (platform == 'darwin') {
-                console.log(colors.green(`- start downloading <${platform}> modules ...`));
-                //zip_file = await downloader("https://raw.githubusercontent.com/zuweie/putsoon-node_modules/master/putsoon-node_modules-darwin-1.0.0.zip", "modules.zip", output, 72*1024*1024);
-                if (mode == 'setup') {
-                    zip_file = await downloader2('https://github.com/zuweie/putsoon-node_modules/raw/master/putsoon-node_modules-darwin-1.0.0.zip', cwd, 'node_modules.zip', 72*1024*1024);
-                }else {
-                    zip_file = await downloader2('https://github.com/zuweie/putsoon-node_modules/raw/master/test_modules.zip', cwd, 'node_modules.zip', 5*1024);
-                }
-                //zip_file = await downloader2('https://github.com/zuweie/putsoon-node_modules/raw/master/ylru.zip', module_dir, 'node_modules.zip', 5 * 1024);
-            }
-            console.log(colors.green('unpacking the node modules.'));
-            zip = new AdmZip(zip_file);
-            zip.extractAllTo(module_dir);
-            shell.rm('-fr', zip_file);
-            console.log(colors.green('node_modules download completed.'));
-        }
-
-       
-        
-        console.log(colors.green('- choose your env:'));
-
+        console.log(colors.green('- configure:'));
         let question = [
             {
                 type:'input',
                 name:'login',
-                message:'enter your login account (defalut admin):'
+                message:'enter your login account (defalut admin) of putsoon:'
             },
             {
                 type:'input',
                 name:'password',
-                message:'enter your login password (default 123456):'
+                message:'enter your login password (default 123456) of putsoon:'
             },
             {
                 type:'list',
@@ -195,12 +142,54 @@ let downloader2 = function (url, dist_dir, filename, default_length) {
         login = login?login:'admin';
         password = password?password:'123456';
 
+        let cwd = process.cwd();
+        let zip_file = '';
+        /**
+         * step 1 download the putsoon.zip
+         */
+        
+        if (dl == 'putsoon' || dl == 'all') {
+            console.log(colors.green('- start download putsoon.zip'));
+            if (mode == 'setup') {
+                zip_file = await downloader2('https://github.com/zuweie/putsoon/archive/master.zip', cwd, 'putsoon.zip', 1024000)
+            }else{
+                zip_file = await downloader2('https://github.com/zuweie/putsoon-node_modules/raw/master/test-putsoon.zip', cwd, 'putsoon.zip', 1024);
+            }
+            console.log(colors.green('unpacking source file ...'));
+            shell.exec(`unzip -q ${zip_file}`)
+            shell.mv(cwd + '/putsoon-master/*', cwd);
+            shell.rm('-fr', cwd + '/putsoon.zip');
+            shell.rm('-fr', cwd + '/putsoon-master');
+            console.log(colors.green('putsoon download completed'));
+        }
+
+        /**
+         * step 2 download node_modules.zip
+         */
+        if (dl == 'modules' || dl == 'all') {
+            
+            if (platform == 'darwin') {
+                console.log(colors.green(`- start downloading <${platform}> modules ...`));
+                //zip_file = await downloader("https://raw.githubusercontent.com/zuweie/putsoon-node_modules/master/putsoon-node_modules-darwin-1.0.0.zip", "modules.zip", output, 72*1024*1024);
+                if (mode == 'setup') {
+                    zip_file = await downloader2('https://github.com/zuweie/putsoon-node_modules/raw/master/putsoon-node_modules-darwin.zip', cwd, 'node_modules.zip', 72*1024*1024);
+                }else {
+                    zip_file = await downloader2('https://github.com/zuweie/putsoon-node_modules/raw/master/test-modules.zip', cwd, 'node_modules.zip', 5*1024);
+                }
+                //zip_file = await downloader2('https://github.com/zuweie/putsoon-node_modules/raw/master/ylru.zip', module_dir, 'node_modules.zip', 5 * 1024);
+            }
+            console.log(colors.green('unpacking node modules ...'));
+            shell.exec(`unzip -q ${zip_file}`);
+            shell.rm('-fr', zip_file);
+            console.log(colors.green('node_modules download completed.'));
+        }
+
         if (mode == 'test') {
             console.debug(colors.red('test mode will install notthing'));
             console.debug(`npm run setup -- --login=${login} --password=${password}`);
             console.debug(`npm run seeding:${env}`);
             shell.exec('ls -all '+cwd+'/');
-            shell.rm('-rf', cwd+'/*');
+            //shell.rm('-rf', cwd+'/*');
             return;
         }
 
