@@ -103,147 +103,98 @@ let downloader3 = function (url, dist_dir, file_name) {
 
 ~ async function () {
 
-
-    let platform = os.platform();
-    let arch     = os.arch();
-
-    let download = argv.download? argv.download : 'putsoon';
     let mode = argv.mode? argv.mode : 'auto'; // auto,manual,test,
     let answer = null;
-    //console.debug('dl', dl);
-
-    if (arch != 'x64') {
-        console.error(colors.red(`SORRY! putsoon dose not support <${arch}> yet.`));
-        return;
-    }
-
-    if (platform != 'darwin' && platform != 'linux') {
-        console.error(colors.red(`SORRY! putsoon dose not support platform <${platform}>.`));
-        return;
-    }
-
     let test = shell.exec('wget -V > /dev/null');
-    if (test.code == 127) {
+    if (test.code != 0) {
         console.log(colors.red(' wget is required for download putsoon, install wget first.'));
     }
     //console.log(test_wget.code);
     //return 0;
     try {
-        if (mode == 'auto' || mode == 'test') {
-            console.log(colors.green('- configure:'));
-            let question = [
-                {
-                    type:'input',
-                    name:'login',
-                    message:'enter your login account (defalut admin) of putsoon:'
-                },
-                {
-                    type:'input',
-                    name:'password',
-                    message:'enter your login password (default 123456) of putsoon:'
-                },
-                {
-                    type:'list',
-                    name:'env',
-                    message:'choose your enviroment: ',
-                    choices: [
-                        {name:'production', value:'pro'},
-                        {name:'development', value:'dev'}
-                    ]
-                },
-            ];
-    
-            answer = await inquirer.prompt(question);
-            answer.login = answer.login?answer.login:'admin';
-            answer.password = answer.password?answer.password:'123456';
 
-        }
-        
         let cwd = process.cwd();
-        let putsoon_zip = 'putsoon.zip';
-        let modules_zip = 'node_modules.zip';
-        let zip_file = '';
-        /**
-         * step 1 download the putsoon.zip
-         */
+        let session = shell.cat(`${cwd}/._session`);
+        let step = session.code == 0 ? session.stdout : '0';
+
+        if (step == '0') {
+
+            if (mode == 'auto' || mode == 'test') {
+                console.log(colors.green('- configure:'));
+                let question = [
+                    {
+                        type:'input',
+                        name:'login',
+                        message:'enter your login account (defalut admin) of putsoon:'
+                    },
+                    {
+                        type:'input',
+                        name:'password',
+                        message:'enter your login password (default 123456) of putsoon:'
+                    },
+                    {
+                        type:'list',
+                        name:'env',
+                        message:'choose your enviroment: ',
+                        choices: [
+                            {name:'production', value:'pro'},
+                            {name:'development', value:'dev'}
+                        ]
+                    },
+                ];
         
-        if (mode == 'auto' || mode == 'test') {
+                answer = await inquirer.prompt(question);
+                answer.login = answer.login?answer.login:'admin';
+                answer.password = answer.password?answer.password:'123456';
+            }
+            
+            let putsoon_zip = 'putsoon.zip';
+            let zip_file = '';
+            /**
+             * step 1 download the putsoon.zip
+             */
             // auto mode
             // download the putsoon zip file.
             console.log(colors.green('- start downloading putsoon.zip'));
             if (mode == 'auto') {
                 zip_file = downloader3('https://github.com/zuweie/putsoon/archive/master.zip', cwd, putsoon_zip);
-            }else {
+            } else {
                 zip_file = downloader3('https://github.com/zuweie/putsoon-node_modules/raw/master/test-putsoon.zip', cwd, putsoon_zip);
             }
             console.log(colors.yellow('putsoon download completed'));
-
-            console.log(colors.green('unpacking source file ...'));
+    
+            console.log(colors.green('- unpacking source file ...'));
             let result = shell.exec(`unzip -q ${zip_file}`);
             if (result.code == 127) {
                 throw result.stderr;
-            } 
+            }
             shell.mv(cwd + '/putsoon-master/*', cwd);
             shell.rm('-fr', `${zip_file}`);
             shell.rm('-fr', `${cwd}/putsoon-master`);
-
-
-            // download the node modules file.
-            console.log(colors.green(`- start downloading node_modules of platform <${platform}>`));
-            if (mode == 'auto') {
-                zip_file = downloader3('http://download.putsoon.com/putsoon-node_modules-drawin.zip', cwd, modules_zip);
-            } else {
-                zip_file = downloader3('https://github.com/zuweie/putsoon-node_modules/raw/master/test-modules.zip', cwd, modules_zip);
-            }
-            console.log(colors.yellow('node_modules download completed.'));
-            console.log(colors.green('unpacking node modules ...'));
-            result = shell.exec(`unzip -q ${cwd}/${modules_zip}`);
-            if (result.code == 127) {
-                throw result.stderr;
-            }
-            shell.rm('-fr', zip_file);
-
-        }else if (mode == 'manual') {
-            // manual mode
-            if (download == 'putsoon') {
-                console.log(colors.green('- start downloading putsoon.zip'));
-                zip_file = downloader3('https://github.com/zuweie/putsoon/archive/master.zip', cwd, putsoon_zip);
-                console.log(colors.yellow('putsoon download completed'));
-
-                console.log(colors.green('unpacking source file ...'));
-                let result = shell.exec(`unzip -q ${zip_file}`);
-                if (result.code == 127) {
-                    throw result.stderr;
-                }
-                shell.mv(cwd + '/putsoon-master/*', cwd);
-                shell.rm('-fr', `${zip_file}`);
-                shell.rm('-fr', `${cwd}/putsoon-master`);
-
-            }else if (download == 'modules') {
-                console.log(colors.green(`- start downloading node_modules of platform <${platform}>`));
-                zip_file = downloader3('http://download.putsoon.com/putsoon-node_modules-drawin.zip', cwd, modules_zip);
-                console.log(colors.yellow('node_modules download completed.'));
-    
-                console.log(colors.green('unpacking node modules ...'));
-                result = shell.exec(`unzip -q ${cwd}/${modules_zip}`);
-                if (result.code == 127) {
-                    throw result.stderr;
-                }
-                shell.rm('-fr', zip_file);
-            }
+            shell.exec(`echo 1 > ${cwd}/._session`);
         }
 
+
         if (mode == 'auto') {
+
+            // auto mode
+            console.log(colors.green('- install node modules ...'));
+            let result =  shell.exec('npm install --production');
+            console.debug('install result', result);
+            if (result.code != 0) {
+                throw result.stderr;
+            }
             console.log(colors.green('- setup putsoon ...'));
             shell.exec(`npm run setup -- --login=${answer.login} --password=${answer.password}`);
             shell.exec(`npm run seeding:${answer.env}`);
-            console.log(colors.green('putsoon install successful.'));
+            console.log(colors.yellow('putsoon install successful.'));
             console.log(colors.yellow('command: "npm run start -- --port=xxxx(default 7001)" start putsoon with port xxxx in production env')); 
             console.log(colors.yellow('command: "npm run dev -- --port=xxxx(default 7001)" start putsoon with port xxxx in development env.'));
             console.log(colors.yellow('command: "npm run stop" stop the putoon'));
             console.log(colors.yellow('lanunch putsoon http://127.0.0.1:7001/admin on Browser'));
             return;
         }else if (mode == 'test') {
+            // test mode
             console.log(colors.yellow('test mode will install notthing'));
             console.log(`npm run setup -- --login=${answer.login} --password=${answer.password}`);
             console.log(`npm run seeding:${answer.env}`);
@@ -251,6 +202,7 @@ let downloader3 = function (url, dist_dir, file_name) {
             //shell.rm('-rf', cwd+'/*');
             return;
         }else {
+            // manual mode
             console.log(colors.yellow('commend: "1. npm install --production" for install the putsoon nodules'));
             console.log(colors.yellow('command: "2. npm run setup" for setup the putsoon'));
             console.log(colors.yellow(`comment: "3. npm run seeding:pro or seeding:dev" for init data for putsoon production enviroment or development enviroment`));
@@ -264,4 +216,5 @@ let downloader3 = function (url, dist_dir, file_name) {
         console.error(colors.red(e));
         return;
     }
+    shell.rm('-rf', `${cwd}/._session`);
 } ();
