@@ -103,7 +103,7 @@ let downloader3 = function (url, dist_dir, file_name) {
 
 ~ async function () {
 
-    let mode = argv.mode? argv.mode : 'auto'; // auto,manual,test,
+    let mode = argv.mode? argv.mode : 'manual'; // auto,manual,test,
     let answer = null;
     let test = shell.exec('wget -V > /dev/null');
     if (test.code != 0) {
@@ -156,7 +156,7 @@ let downloader3 = function (url, dist_dir, file_name) {
             // auto mode
             // download the putsoon zip file.
             console.log(colors.green('- start downloading putsoon.zip'));
-            if (mode == 'auto') {
+            if (mode == 'auto' || mode == 'manual') {
                 zip_file = downloader3('https://github.com/zuweie/putsoon/archive/master.zip', cwd, putsoon_zip);
             } else {
                 zip_file = downloader3('https://github.com/zuweie/putsoon-node_modules/raw/master/test-putsoon.zip', cwd, putsoon_zip);
@@ -171,7 +171,9 @@ let downloader3 = function (url, dist_dir, file_name) {
             shell.mv(cwd + '/putsoon-master/*', cwd);
             shell.rm('-fr', `${zip_file}`);
             shell.rm('-fr', `${cwd}/putsoon-master`);
-            shell.exec(`echo 1 > ${cwd}/._session`);
+            if (mode == 'auto'){
+                shell.exec(`echo 1 > ${cwd}/._session`);
+            }
         }
 
 
@@ -199,22 +201,23 @@ let downloader3 = function (url, dist_dir, file_name) {
             console.log(`npm run setup -- --login=${answer.login} --password=${answer.password}`);
             console.log(`npm run seeding:${answer.env}`);
             shell.exec('ls -all '+cwd+'/');
-            //shell.rm('-rf', cwd+'/*');
+            shell.rm('-rf', cwd+'/*');
             return;
         }else {
             // manual mode
-            console.log(colors.yellow('commend: "1. npm install --production" for install the putsoon nodules'));
-            console.log(colors.yellow('command: "2. npm run setup" for setup the putsoon'));
-            console.log(colors.yellow(`comment: "3. npm run seeding:pro or seeding:dev" for init data for putsoon production enviroment or development enviroment`));
-            console.log(colors.yellow('command: "4. npm run start -- --port=xxxx(default 7001)" start putsoon with port xxxx in production env')); 
-            console.log(colors.yellow('command: "5. npm run dev -- --port=xxxx(default 7001)" start putsoon with port xxxx in development env.'));
-            console.log(colors.yellow('command: "6. npm run stop" stop the putoon'));
-            console.log(colors.yellow('lanunch putsoon http://127.0.0.1:7001/admin on Browser'));
+            console.log(colors.yellow('commend: "1.0 npm install --production" for install the putsoon node_modules'));
+            console.log(colors.yellow('command: "2.0 npm run setup" for setup the putsoon'));
+            console.log(colors.yellow('comment: "3.0 npm run seeding:pro" for init data of putsoon production enviroment'))
+            console.log(colors.yellow('comment: "3.1 npm run seeding:dev" for init data of putsoon development enviroment'));
+            console.log(colors.yellow('command: "4.0 npm run start -- --port=xxxx(default 7001)" start putsoon with port xxxx(default 7001) in production env')); 
+            console.log(colors.yellow('command: "4.1 npm run dev -- --port=xxxx(default 7001)" start putsoon with port xxxx(default 7001) in development env.'));
+            console.log(colors.yellow('command: "5.0 npm run stop" stop the putoon'));
+            console.log(colors.yellow('lanunch putsoon http://127.0.0.1:xxxx(default 7001)/admin on Browser'));
         }
 
     } catch (e) {
         console.error(colors.red(e));
         return;
     }
-    shell.rm('-rf', `${cwd}/._session`);
+    shell.rm('-rf', `${process.cwd()}/._session`);
 } ();
